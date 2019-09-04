@@ -61,7 +61,7 @@ void random_numbers(){
 void sig_handler(int signo){
     char repeat;
 
-    printf("\nYou got %d out of %d items correctly\n", correct_answers, total_score);
+    printf("\nYou got %d out of %d items correctly\n", correct_answers, total_score-1);
 
     do{
 
@@ -76,6 +76,8 @@ void sig_handler(int signo){
         }
 
         else if(repeat == 13){
+            correct_answers = 0;
+            total_score = 0;
             break;
         }
 
@@ -84,9 +86,6 @@ void sig_handler(int signo){
         }  
 
     }while(repeat != 'y' || repeat != 'Y');
-
-    correct_answers = 0;
-    total_score = 0;
 }
 
 int number_check(const char *str){
@@ -164,6 +163,8 @@ int main(){
         //neg_num_tester();
         //bonus_tester();
 
+        total_score += 1;
+
         reading = select(1, &input_set, NULL, NULL, &timeout);
 
         if(reading == -1){
@@ -171,7 +172,6 @@ int main(){
         }
 
         if(reading){
-            total_score += 1;
 
             read_bytes = read(0, answer, sizeof(answer));
             
