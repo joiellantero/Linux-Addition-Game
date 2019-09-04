@@ -9,27 +9,31 @@
 
 #define WAIT 3
 
-int r1 = 0, r2 = 0, sign = 0, correct_answers = 0, total_score = 0, skipper = 0;
+int r1 = 0, r2 = 0, sign = 0, correct_answers = 0, total_score = 0, flag = WAIT;
 
 void bonus_tester(){
-    srand(time(NULL));
-    r1 = rand() % 10;
+    r1 = 0;
     r2 = 0;
-    sign = 4;
+    sign = rand() % 4 + 1;
 
-    printf("%d / %d = ", r1, r2);
-    fflush(stdout);
-
-}
-
-void neg_num_tester(){
-    srand(time(NULL));
-    r1 = rand() % 10;
-    r2 = rand() % 10;
-    sign = 2;
-
-    printf("%d - %d = ", r1, r2);
-    fflush(stdout);
+    switch(sign){
+        case 1:
+            printf("%d + %d = ", r1, r2);
+            fflush(stdout);
+            break;
+        case 2:
+            printf("%d - %d = ", r1, r2);
+            fflush(stdout);
+            break;
+        case 3:
+            printf("%d * %d = ", r1, r2);
+            fflush(stdout);
+            break;
+        case 4:
+            printf("%d / %d = ", r1, r2);
+            fflush(stdout);
+            break;
+    } 
 }
 
 void random_numbers(){
@@ -59,7 +63,7 @@ void random_numbers(){
 }
 
 void sig_handler(int signo){
-    char repeat;
+    char repeat, checker = 0;
 
     printf("\nYou got %d out of %d items correctly\n", correct_answers, total_score);
 
@@ -74,8 +78,12 @@ void sig_handler(int signo){
         if (repeat == 'y' || repeat == 'Y'){
             exit(1);
         }
-
-        else if(repeat == 13){
+        
+        else if (repeat == 13){
+            puts("pressed enter");
+            checker = 1;
+            correct_answers = 0;
+            total_score = 0;
             break;
         }
 
@@ -83,10 +91,7 @@ void sig_handler(int signo){
             puts("\n[ERROR] Invalid input\n");
         }  
 
-    }while(repeat != 'y' || repeat != 'Y');
-
-    correct_answers = 0;
-    total_score = 0;
+    }while(repeat != 'y' || repeat != 'Y' || repeat != 13);
 }
 
 int number_check(const char *str){
@@ -96,13 +101,6 @@ int number_check(const char *str){
         }
     }
     return 1;
-}
-
-int neg_num_checker(const char *str){
-    if(str[0] == '-'){
-        return 1;
-    }
-    return 0;
 }
 
 void destroyer(char **obj){
@@ -138,53 +136,23 @@ void show_correct_answers(){
     }
 }
 
-int main(){
-    
-    int reading = 0, read_bytes = 0, now_int_answer = 0;
+void alarm_handler(int signo){
+    int now_int_answer = 0;
     char *answer;
     answer = malloc(4);
-    fd_set input_set;
-    struct timeval timeout;
-   
-    while(1){
-        FD_ZERO(&input_set);
-        FD_SET(0, &input_set);
-        timeout.tv_sec = WAIT;
-        timeout.tv_usec = 0;
 
-        struct sigaction sig_int_handler;
+   if(--flag){
 
-        sig_int_handler.sa_handler = sig_handler;
-        sigemptyset(&sig_int_handler.sa_mask);
-        sig_int_handler.sa_flags = 0;
+            scanf("%s", answer);
 
-        sigaction(SIGINT, &sig_int_handler, NULL);
+            struct sigaction sig_int_handler;
 
-        random_numbers();
-        //neg_num_tester();
-        //bonus_tester();
+            sig_int_handler.sa_handler = sig_handler;
+            sigemptyset(&sig_int_handler.sa_mask);
+            sig_int_handler.sa_flags = 0;
 
-        reading = select(1, &input_set, NULL, NULL, &timeout);
-
-        if(reading == -1){
-            continue;
-        }
-
-        if(reading){
-            total_score += 1;
-
-            read_bytes = read(0, answer, sizeof(answer));
-            
-            if(answer[read_bytes-1] == '\n'){
-                --read_bytes;
-                answer[read_bytes] = '\0';
-            }
-
-            if(read_bytes == 0){
-                puts("You just hit enter\n");
-                continue;
-            }
-
+            sigaction(SIGINT, &sig_int_handler, NULL);
+                               
             if(number_check(answer)){
                 now_int_answer = atoi(answer);
 
@@ -215,7 +183,6 @@ int main(){
             }
 
             else {
-                        //printf("[ANSWER] %s\n", answer);
                 if(sign == 4 && r2 == 0 && r1 != 0 && (strcmp(answer, "u") == 0)){
                     puts("Correct");
                     correct_answers += 1;
@@ -226,25 +193,33 @@ int main(){
                     correct_answers += 1;
                 }
 
-                else if (sign == 2 && neg_num_checker(answer)){
-                    puts("Correct");
-                    correct_answers += 1;
-                }
-
                 else{
                     printf("Incorrect. ");
                     show_correct_answers();
                 }
-
-                 //printf("[NEG NUM CHECKER SHOW] %d\n", neg_num_checker(answer));
             }
         }
 
         else {
-            printf("\nNo data within %d seconds.\n", WAIT);
+            printf("\nIncorrect. No answer entered within %d seconds.\n", WAIT);
+            flag = WAIT;
         }
-    }
 
-    free(answer);
+        alarm(1);
+
+        //destroyer(&answer);
+        free(answer);
+}
+
+int main(int argc, char*argv[]){
+        random_numbers();
+        //bonus_tester();
+
+        total_score += 1;
+
+        signal(SIGALRM, alarm_handler);
+        alarm(1);
+        while(1);
+
     return 0;
 }
