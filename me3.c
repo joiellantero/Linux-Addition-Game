@@ -98,8 +98,13 @@ int number_check(const char *str){
 }
 
 int neg_num_checker(const char *str){
+    char neg_num;
     if(str[0] == '-'){
-        return 1;
+        neg_num = atoi(str);
+        //rintf("str: %c\n negnum: %d", str[1], neg_num);
+        if (neg_num == (r1 - r2)){
+            return 1;
+        }
     }
     return 0;
 }
@@ -159,9 +164,9 @@ int main(){
 
         sigaction(SIGINT, &sig_int_handler, NULL);
 
-        random_numbers();
+        //random_numbers();
         //neg_num_tester();
-        //bonus_tester();
+        bonus_tester();
 
         total_score += 1;
 
