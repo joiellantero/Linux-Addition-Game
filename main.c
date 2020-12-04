@@ -19,7 +19,6 @@ void bonus_tester(){
 
     printf("%d / %d = ", r1, r2);
     fflush(stdout);
-
 }
 
 void neg_num_tester(){
@@ -55,7 +54,7 @@ void random_numbers(){
             printf("%d / %d = ", r1, r2);
             fflush(stdout);
             break;
-    } 
+    }
 }
 
 void sig_handler(int signo){
@@ -83,7 +82,7 @@ void sig_handler(int signo){
 
         else {
             puts("\n[ERROR] Invalid input\n");
-        }  
+        }
 
     }while(repeat != 'y' || repeat != 'Y');
 }
@@ -101,7 +100,6 @@ int neg_num_checker(const char *str){
     char neg_num;
     if(str[0] == '-'){
         neg_num = atoi(str);
-        //rintf("str: %c\n negnum: %d", str[1], neg_num);
         if (neg_num == (r1 - r2)){
             return 1;
         }
@@ -143,13 +141,13 @@ void show_correct_answers(){
 }
 
 int main(){
-    
+
     int reading = 0, read_bytes = 0, now_int_answer = 0;
     char *answer;
     answer = malloc(4);
     fd_set input_set;
     struct timeval timeout;
-   
+
     while(1){
         FD_ZERO(&input_set);
         FD_SET(0, &input_set);
@@ -164,8 +162,6 @@ int main(){
 
         sigaction(SIGINT, &sig_int_handler, NULL);
 
-        //random_numbers();
-        //neg_num_tester();
         bonus_tester();
 
         total_score += 1;
@@ -179,7 +175,7 @@ int main(){
         if(reading){
 
             read_bytes = read(0, answer, sizeof(answer));
-            
+
             if(answer[read_bytes-1] == '\n'){
                 --read_bytes;
                 answer[read_bytes] = '\0';
@@ -220,7 +216,6 @@ int main(){
             }
 
             else {
-                        //printf("[ANSWER] %s\n", answer);
                 if(sign == 4 && r2 == 0 && r1 != 0 && (strcmp(answer, "u") == 0)){
                     puts("Correct");
                     correct_answers += 1;
@@ -240,8 +235,6 @@ int main(){
                     printf("Incorrect. ");
                     show_correct_answers();
                 }
-
-                 //printf("[NEG NUM CHECKER SHOW] %d\n", neg_num_checker(answer));
             }
         }
 
